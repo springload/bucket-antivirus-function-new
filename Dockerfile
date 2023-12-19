@@ -19,7 +19,7 @@ RUN yum update -y && \
 
 # Download libraries we need to run in lambda
 WORKDIR /tmp
-RUN yumdownloader -x \*i686 --archlist=x86_64,aarch64 \
+RUN yumdownloader -x \*i686 --archlist=x86_64 \
         clamav clamav-lib clamav-update json-c \
         pcre2 libtool-ltdl libxml2 bzip2-libs \
         xz-libs libprelude gnutls nettle libcurl \
