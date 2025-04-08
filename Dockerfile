@@ -76,6 +76,10 @@ ENV LD_LIBRARY_PATH=/var/task/bin
 ENV CLAMAVLIB_PATH=/var/task/bin
 RUN ldconfig
 
+COPY clamscan_wrapper.sh /opt/app/bin/
+RUN chmod +x /opt/app/bin/clamscan_wrapper.sh
+
+
 # Check ClamAV version
 RUN echo "ClamAV version:" && LD_LIBRARY_PATH=/opt/app/bin /opt/app/bin/clamscan --version
 
