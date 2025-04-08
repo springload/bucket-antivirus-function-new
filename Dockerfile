@@ -30,6 +30,7 @@ RUN cp -f /usr/local/bin/clamscan /opt/app/bin/ || cp -f /usr/bin/clamscan /opt/
     # Copy system libraries needed by ClamAV \
     cp -f /lib64/libm.so.6 /opt/app/bin/ && \
     cp -f /lib64/libc.so.6 /opt/app/bin/ && \
+    cp -f /lib64/ld-linux-x86-64.so.2 /opt/app/bin/ && \
     # Try to locate libclamav and copy from the correct location \ENV CLAMAVLIB_PATH=/var/task/bin
     find / -name "libclamav.so*" 2>/dev/null | while read lib; do \
         cp -f $lib /opt/app/bin/; \
