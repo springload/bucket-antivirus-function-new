@@ -72,7 +72,7 @@ RUN echo "DatabaseMirror database.clamav.net" > /opt/app/bin/freshclam.conf && \
     echo "DatabaseDirectory /var/lib/clamav" >> /opt/app/bin/freshclam.conf
 
 # Set the library path and update ldconfig
-ENV LD_LIBRARY_PATH=/opt/app/bin
+ENV LD_LIBRARY_PATH=/var/task/bin
 ENV CLAMAVLIB_PATH=/var/task/bin
 RUN ldconfig
 

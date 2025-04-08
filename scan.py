@@ -17,7 +17,6 @@ import copy
 import json
 import os
 from urllib.parse import unquote_plus
-from distutils.util import strtobool
 
 import boto3
 
@@ -41,6 +40,8 @@ from common import SNS_ENDPOINT
 from common import S3_ENDPOINT
 from common import create_dir
 from common import get_timestamp
+
+
 
 
 def event_object(event, event_source="s3"):
@@ -271,4 +272,4 @@ def lambda_handler(event, context):
 
 
 def str_to_bool(s):
-    return bool(strtobool(str(s)))
+    return str(s).strip().lower() in ("true", "yes", "1")
