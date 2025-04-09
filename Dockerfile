@@ -61,9 +61,10 @@ RUN cp -f /usr/local/bin/clamscan /opt/app/bin/ || cp -f /usr/bin/clamscan /opt/
         cp -f $lib /opt/app/bin/ || true; \
     done
 
-    # Copy ClamAV shared libs explicitly
-    RUN cp -f /usr/local/lib64/libclamav.so* /opt/app/bin/ && \
-        cp -f /usr/local/lib64/libclammspack.so* /opt/app/bin/
+# Copy ClamAV shared libs explicitly
+RUN cp -f /usr/local/lib64/libclamav.so* /opt/app/bin/ && \
+    cp -f /usr/local/lib64/libclammspack.so* /opt/app/bin/ && \
+    cp -f /usr/local/lib64/libfreshclam.so* /opt/app/bin/ || true
 
 # Create users for clamav
 RUN groupadd clamav || true
@@ -81,8 +82,6 @@ ENV LD_LIBRARY_PATH=/var/task/bin
 ENV CLAMAVLIB_PATH=/var/task/bin
 RUN ldconfig
 
-COPY clamscan_wrapper.sh /opt/app/bin/
-RUN chmod +x /opt/app/bin/clamscan_wrapper.sh
 
 
 # Check ClamAV version
