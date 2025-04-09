@@ -214,6 +214,7 @@ def scan_file(path):
         stderr=subprocess.STDOUT,
         stdout=subprocess.PIPE,
         env=av_env,
+        cwd="/var/task"
     )
     output = av_proc.communicate()[0].decode()
     print("clamscan output:\n%s" % output)
