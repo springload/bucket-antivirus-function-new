@@ -76,29 +76,24 @@ RUN echo "Verifying clamscan dependencies:" && \
 WORKDIR /opt/app
 RUN zip -r9 --exclude="*test*" /opt/app/build/anti-virus.zip *.py bin
 
-# Add Python packages to the zip file
-# Lambda base image uses /var/lang/lib/python3.12/site-packages
-RUN python_version=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')") && \
-    site_packages="/var/lang/lib/python${python_version}/site-packages" && \
-    if [ -d "$site_packages" ]; then \
-        echo "Found site-packages at: $site_packages"; \
+# Add ONLY Python packages installed via pip (not full site-packages)
+# Lambda runtime already includes: boto3, botocore, urllib3, simplejson, etc.
+RUN pip3 freeze > /tmp/requirements.lock && \
+    pip3 show datadog | grep Location | awk '{print $2}' > /tmp/site_packages_path && \
+    site_packages=$(cat /tmp/site_packages_path) && \
+    if [ -n "$site_packages" ] && [ -d "$site_packages" ]; then \
+        echo "Including pip-installed packages from: $site_packages"; \
         cd "$site_packages" && \
-        zip -r9 /opt/app/build/anti-virus.zip * || echo "No files in site-packages"; \
-    else \
-        echo "Site packages directory not found at $site_packages, searching..."; \
-        site_packages=$(pip3 show datadog 2>/dev/null | grep Location | awk '{print $2}') && \
-        if [ -n "$site_packages" ]; then \
-            echo "Found site-packages at: $site_packages"; \
-            cd "$site_packages" && \
-            zip -r9 /opt/app/build/anti-virus.zip * || echo "No files in $site_packages"; \
-        else \
-            find /var/lang /usr -type d -name "site-packages" 2>/dev/null | while read dir; do \
-                echo "Found site-packages at: $dir"; \
-                cd "$dir" && \
-                zip -r9 /opt/app/build/anti-virus.zip * || echo "No files in $dir"; \
-                break; \
-            done; \
-        fi; \
-    fi
+        for pkg in $(cut -d= -f1 /tmp/requirements.lock); do \
+            pkg_lower=$(echo "$pkg" | tr '[:upper:]' '[:lower:]' | tr '-' '_'); \
+            echo "Adding $pkg ($pkg_lower)"; \
+            zip -r9 /opt/app/build/anti-virus.zip \
+                "$pkg" "$pkg"*.dist-info \
+                "$pkg_lower" "$pkg_lower"*.dist-info \
+                2>/dev/null || true; \
+        done; \
+    fi && \
+    echo "Final ZIP size:" && \
+    ls -lh /opt/app/build/anti-virus.zip
 
 WORKDIR /opt/app
