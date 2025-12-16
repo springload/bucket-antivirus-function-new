@@ -76,20 +76,19 @@ RUN echo "Verifying clamscan dependencies:" && \
 WORKDIR /opt/app
 RUN zip -r9 --exclude="*test*" /opt/app/build/anti-virus.zip *.py bin
 
-# Add ONLY Python packages installed via pip (not full site-packages)
-# Lambda runtime already includes: boto3, botocore, urllib3, simplejson, etc.
-RUN pip3 freeze > /tmp/requirements.lock && \
-    pip3 show datadog | grep Location | awk '{print $2}' > /tmp/site_packages_path && \
+# Add ONLY Python packages we need (not runtime-provided ones)
+# Lambda runtime already includes: boto3, botocore, s3transfer, jmespath, urllib3, simplejson
+# We only bundle: datadog, requests, pytz, chardet, idna, certifi, decorator, charset_normalizer
+RUN pip3 show datadog | grep Location | awk '{print $2}' > /tmp/site_packages_path && \
     site_packages=$(cat /tmp/site_packages_path) && \
     if [ -n "$site_packages" ] && [ -d "$site_packages" ]; then \
         echo "Including pip-installed packages from: $site_packages"; \
         cd "$site_packages" && \
-        for pkg in $(cut -d= -f1 /tmp/requirements.lock); do \
-            pkg_lower=$(echo "$pkg" | tr '[:upper:]' '[:lower:]' | tr '-' '_'); \
-            echo "Adding $pkg ($pkg_lower)"; \
+        for pkg in datadog requests pytz chardet idna certifi decorator charset_normalizer dateutil; do \
+            echo "Adding $pkg"; \
             zip -r9 /opt/app/build/anti-virus.zip \
                 "$pkg" "$pkg"*.dist-info \
-                "$pkg_lower" "$pkg_lower"*.dist-info \
+                "python_${pkg}"*.dist-info \
                 2>/dev/null || true; \
         done; \
     fi && \
